@@ -68,10 +68,10 @@ class Bwt extends utils.Adapter {
         }
     }
     async localLogin() {
-        this.log.info("local login");
+        this.log.info("local login https://" + this.config.localIp + "/users/login");
         await this.requestClient({
             method: "post",
-            url: "https://" + this.config.localIp + "/users/login?url=%2Fusers%2Flogin",
+            url: "https://" + this.config.localIp + "/users/login",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                 Connection: "keep-alive",
@@ -79,7 +79,7 @@ class Bwt extends utils.Adapter {
             },
             jar: this.cookieJar,
             withCredentials: true,
-            data: "STLoginPWField=" + this.config.password + "&function=save&_method=POST",
+            data: "_method=POST&STLoginPWField=" + this.config.localPassword + "&function=save",
         })
             .then((res) => {
                 this.log.info(JSON.stringify(res.data));
