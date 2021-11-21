@@ -12,7 +12,8 @@ const qs = require("qs");
 const Json2iob = require("./lib/json2iob");
 const { wrapper } = require("axios-cookiejar-support");
 const tough = require("tough-cookie");
-const https = require("https");
+const { HttpsCookieAgent } = require("http-cookie-agent");
+
 class Bwt extends utils.Adapter {
     /**
      * @param {Partial<utils.AdapterOptions>} [options={}]
@@ -44,11 +45,13 @@ class Bwt extends utils.Adapter {
         this.requestClient = wrapper(
             axios.create({
                 jar: this.cookieJar,
-                httpsAgent: new https.Agent({
-                    rejectUnauthorized: false,
-                }),
             })
         );
+        this.requestClient.httpsAgent = new HttpsCookieAgent({
+            jar: this.cookieJar,
+            keepAlive: true,
+            rejectUnauthorized: false, // disable CA checks
+        });
         this.updateInterval = null;
         this.reLoginTimeout = null;
         this.refreshTokenTimeout = null;
