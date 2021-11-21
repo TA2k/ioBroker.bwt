@@ -70,13 +70,13 @@ class Bwt extends utils.Adapter {
         this.log.info("local login");
         await this.requestClient({
             method: "post",
-            url: "https://" + this.config.localIp + "/users/login",
+            url: "https://" + this.config.localIp + "/users/login?url=%2Fusers%2Flogin",
             headers: {
                 Accept: "*/*",
             },
             jar: this.cookieJar,
             withCredentials: true,
-            data: qs.stringify({ STLoginPWField: this.config.password, function: "save", _method: "POST" }),
+            data: "STLoginPWField=" + this.config.password + "&function=save&_method=POST",
         })
             .then((res) => {
                 this.log.info(JSON.stringify(res.data));
