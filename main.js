@@ -10,7 +10,6 @@ const utils = require("@iobroker/adapter-core");
 const axios = require("axios");
 const qs = require("qs");
 const Json2iob = require("./lib/json2iob");
-const { wrapper } = require("axios-cookiejar-support");
 const tough = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent");
 
@@ -42,15 +41,15 @@ class Bwt extends utils.Adapter {
             this.config.interval = 0.5;
         }
         this.cookieJar = new tough.CookieJar();
-        this.requestClient = wrapper(
-            axios.create({
-                jar: this.cookieJar,
-            })
-        );
-        this.httpsAgent = new HttpsCookieAgent({
+        this.requestClient = axios.create({
             jar: this.cookieJar,
-            rejectUnauthorized: false, // disable CA checks
+            withCredentials: true,
+            httpsAgent: new HttpsCookieAgent({
+                jar: this.cookieJar,
+                rejectUnauthorized: false, // disable CA checks
+            }),
         });
+
         this.updateInterval = null;
         this.reLoginTimeout = null;
         this.refreshTokenTimeout = null;
@@ -75,7 +74,6 @@ class Bwt extends utils.Adapter {
             headers: {
                 Accept: "*/*",
             },
-            httpsAgent: this.httpsAgent,
             jar: this.cookieJar,
             withCredentials: true,
             data: qs.stringify({ STLoginPWField: this.config.password, function: "save", _method: "POST" }),
@@ -112,7 +110,6 @@ class Bwt extends utils.Adapter {
             await this.requestClient({
                 method: "get",
                 url: url,
-                httpsAgent: this.httpsAgent,
                 headers: headers,
                 jar: this.cookieJar,
                 withCredentials: true,
