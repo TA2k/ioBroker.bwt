@@ -47,7 +47,7 @@ class Bwt extends utils.Adapter {
                 jar: this.cookieJar,
             })
         );
-        this.requestClient.httpsAgent = new HttpsCookieAgent({
+        this.httpsAgent = new HttpsCookieAgent({
             jar: this.cookieJar,
             rejectUnauthorized: false, // disable CA checks
         });
@@ -75,6 +75,7 @@ class Bwt extends utils.Adapter {
             headers: {
                 Accept: "*/*",
             },
+            httpsAgent: this.httpsAgent,
             jar: this.cookieJar,
             withCredentials: true,
             data: qs.stringify({ STLoginPWField: this.config.password, function: "save", _method: "POST" }),
@@ -111,6 +112,7 @@ class Bwt extends utils.Adapter {
             await this.requestClient({
                 method: "get",
                 url: url,
+                httpsAgent: this.httpsAgent,
                 headers: headers,
                 jar: this.cookieJar,
                 withCredentials: true,
