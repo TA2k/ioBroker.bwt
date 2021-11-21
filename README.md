@@ -17,7 +17,11 @@ Adapter for bwt devices
 
 ## Loginablauf
 
-Die lokale IP und Passwort eingeben
+Die lokale IP und Zugriff Code eingeben
+
+Es wird der lokale Zugriff-Code benötigt. Dazu muss man am Gerät die Cloud-Registrierung durchlaufen. Danach bekommt man den Zugriffs-Code per email zugesendet.
+
+Tip zur Inbetriebnahme der Anbindung am Gerät: Bei WLAN-Anbindung muss die Option DHCP deaktiviert sein. DHCP bezieht sich nur auf die LAN-Anbindung ! Andersherum muss bei LAN-Anbindung DHCP aktiviert und WLAN ausgeschaltet sein. Es dürfen immer nur die Parameter einer Schnittstelle konfiguriert sein, sonst klappts nicht.
 
 ## Diskussion und Fragen
 
