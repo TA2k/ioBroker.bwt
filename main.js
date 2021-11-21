@@ -65,7 +65,7 @@ class Bwt extends utils.Adapter {
             await this.updateLocalDevices();
             this.updateInterval = setInterval(async () => {
                 await this.updateLocalDevices();
-            }, this.config.localInterval * 60 * 1000);
+            }, this.config.localInterval * 1000);
             this.refreshTokenInterval = setInterval(() => {
                 this.localLogin();
             }, 10 * 60 * 1000);
