@@ -126,9 +126,9 @@ class Bwt extends utils.Adapter {
                 })
                 .catch((error) => {
                     if (error.response) {
-                        if (error.response.status === 401) {
+                        if (error.response.status === 401 || error.response.status === 302) {
                             error.response && this.log.debug(JSON.stringify(error.response.data));
-                            this.log.info(element.path + " receive 401 error. Refresh Token in 60 seconds");
+                            this.log.info(element.path + " receive 401 or 302 error. Refresh Token in 60 seconds");
                             this.refreshTokenTimeout && clearTimeout(this.refreshTokenTimeout);
                             this.refreshTokenTimeout = setTimeout(() => {
                                 this.localLogin();
