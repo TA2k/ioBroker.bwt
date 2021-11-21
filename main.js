@@ -57,6 +57,7 @@ class Bwt extends utils.Adapter {
         this.subscribeStates("*");
         if (this.config.localIp) {
             await this.localLogin();
+            this.log.info(JSON.stringify(this.cookieJar.toJSON()));
             await this.updateLocalDevices();
             this.updateInterval = setInterval(async () => {
                 await this.updateLocalDevices();
