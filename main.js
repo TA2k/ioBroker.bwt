@@ -56,6 +56,10 @@ class Bwt extends utils.Adapter {
         this.session = {};
         this.subscribeStates("*");
         if (this.config.localIp) {
+            if (!this.config.localPassword) {
+                this.log.warn("No local password set. Please set local password in the adapter settings");
+                return;
+            }
             await this.localLogin();
             this.log.info(JSON.stringify(this.cookieJar.toJSON()));
             await this.updateLocalDevices();
