@@ -1,0 +1,121 @@
+{
+    "common": {
+        "name": "bwt",
+        "version": "0.0.1",
+        "news": {
+            "0.0.1": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie",
+                "zh-cn": "首次出版"
+            }
+        },
+        "title": "BWT",
+        "titleLang": {
+            "en": "BWT",
+            "de": "BWT",
+            "ru": "BWT",
+            "pt": "BWT",
+            "nl": "BWT",
+            "fr": "BWT",
+            "it": "BWT",
+            "es": "BWT",
+            "pl": "BWT",
+            "zh-cn": "压载水处理"
+        },
+        "desc": {
+            "en": "Adapter for bwt devices",
+            "de": "Adapter für bwt-Geräte",
+            "ru": "Адаптер для устройств bwt",
+            "pt": "Adaptador para dispositivos bwt",
+            "nl": "Adapter voor bwt-apparaten",
+            "fr": "Adaptateur pour appareils bwt",
+            "it": "Adattatore per dispositivi bwt",
+            "es": "Adaptador para dispositivos bwt",
+            "pl": "Adapter do urządzeń bwt",
+            "zh-cn": "bwt 设备的适配器"
+        },
+        "authors": [
+            "TA2k <tombox2020@gmail.com>"
+        ],
+        "keywords": [
+            "BWT",
+            "perla"
+        ],
+        "license": "MIT",
+        "platform": "Javascript/Node.js",
+        "main": "main.js",
+        "icon": "bwt.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/TA2k/ioBroker.bwt/master/admin/bwt.png",
+        "readme": "https://github.com/TA2k/ioBroker.bwt/blob/master/README.md",
+        "loglevel": "info",
+        "mode": "daemon",
+        "type": "household",
+        "compact": true,
+        "connectionType": "local",
+        "dataSource": "poll",
+        "materialize": true,
+        "plugins": {
+            "sentry": {
+                "dsn": "https://c9bd6c851b1246da95e6e982aa9b88f3@sentry.iobroker.net/152"
+            }
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=3.0.0"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=4.0.9"
+            }
+        ]
+    },
+    "encryptedNative": [
+        "password",
+        "localPassword"
+    ],
+    "protectedNative": [
+        "password",
+        "localPassword"
+    ],
+    "native": {
+        "username": "",
+        "password": "",
+        "localPassword": "",
+        "localIp": "",
+        "localInterval": 60,
+        "interval": 10
+    },
+    "objects": [],
+    "instanceObjects": [
+        {
+            "_id": "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.connection",
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "Device or service connected",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
+        }
+    ]
+}
