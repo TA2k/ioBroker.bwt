@@ -131,7 +131,7 @@ class Bwt extends utils.Adapter {
                             this.log.info(element.path + " receive 401 error. Refresh Token in 60 seconds");
                             this.refreshTokenTimeout && clearTimeout(this.refreshTokenTimeout);
                             this.refreshTokenTimeout = setTimeout(() => {
-                                this.refreshToken();
+                                this.localLogin();
                             }, 1000 * 60);
 
                             return;
