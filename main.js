@@ -83,6 +83,8 @@ class Bwt extends utils.Adapter {
         })
             .then((res) => {
                 this.log.info(JSON.stringify(res.data));
+
+                this.setState("info.connection", true, true);
             })
             .catch((error) => {
                 this.log.error(error);
