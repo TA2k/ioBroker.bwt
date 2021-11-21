@@ -21,7 +21,7 @@ Die lokale IP und Passwort eingeben
 
 ## Diskussion und Fragen
 
-<https://forum.iobroker.net/topic/>
+<https://forum.iobroker.net/topic/49576/test-adapter-bwt-v0-0-x>
 
 ## Changelog
 
