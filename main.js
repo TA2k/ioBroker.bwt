@@ -49,7 +49,6 @@ class Bwt extends utils.Adapter {
         );
         this.requestClient.httpsAgent = new HttpsCookieAgent({
             jar: this.cookieJar,
-            keepAlive: true,
             rejectUnauthorized: false, // disable CA checks
         });
         this.updateInterval = null;
@@ -69,6 +68,7 @@ class Bwt extends utils.Adapter {
         }
     }
     async localLogin() {
+        this.log.info("local login");
         await this.requestClient({
             method: "post",
             url: "https://" + this.config.localIp + "/users/login",
