@@ -71,7 +71,7 @@ class Bwt extends utils.Adapter {
         }
         if (this.config.username && this.config.password) {
             await this.login();
-            if (!this.session) {
+            if (!this.session.access_token) {
                 return;
             }
             await this.getDeviceList();
@@ -80,7 +80,7 @@ class Bwt extends utils.Adapter {
                 await this.updateDevices();
             }, this.config.interval * 60 * 1000);
             this.refreshTokenInterval = setInterval(() => {
-                this.localLogin();
+                this.refreshToken();
             }, this.session.expires_in * 60 * 1000);
         }
     }
@@ -111,13 +111,38 @@ class Bwt extends utils.Adapter {
             });
     }
     async login() {
+        const xsrf = await this.requestClient({
+            method: "get",
+            url: "https://account.bwt-group.com/?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fresponse_type%3Dcode%2520id_token%26client_id%3Dc0d4582ef6o9a4128dnmg94lz5h468cj%26scope%3Dopenid%2520offline_access%2520bwt_digital_toolbox%26nonce%3Dasd%26state%3Db64c76dee8ec45db87c2d093288bce73%26redirect_uri%3Dcom.bwt.athomeapp%253A%252F%252Foauth2redirect",
+            headers: {
+                Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1.2 Mobile/15E148 Safari/604.1",
+                "Accept-Language": "de-de",
+            },
+            jar: this.cookieJar,
+            withCredentials: true,
+        })
+            .then((res) => {
+                this.log.debug(JSON.stringify(res.data));
+                for (const cookie of res.headers["set-cookie"]) {
+                    if (cookie.split("=")[0] === "XSRF-TOKEN") {
+                        return cookie.split("=")[1].split(";")[0];
+                    }
+                }
+            })
+            .catch((error) => {
+                this.log.error(error);
+                if (error.response) {
+                    this.log.error(JSON.stringify(error.response.data));
+                }
+            });
         const redirectUrl = await this.requestClient({
             method: "post",
             url: "https://account.bwt-group.com/api/frontend/account/login",
             headers: {
                 Pragma: "no-cache",
                 Accept: "application/json, text/plain, */*",
-                "X-XSRF-TOKEN": "CfDJ8OwC7zyDdjVApBfFiiwrjrBhFlNo4JzbVKWEY-AvHm4VKHOr_JUAUZgdlOu_AmHA9z2qkSkxo2fzJGqdiBjlIiMOjbbhWDpPclBUa4BbWPRYcZlJejaKm4EFiefa-A_I4hXrwQ_AYZAdEtZyX4wfuww",
+                "X-XSRF-TOKEN": xsrf,
                 "Accept-Language": "de-de",
                 "Content-Type": "application/json",
                 "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1.2 Mobile/15E148 Safari/604.1",
@@ -133,11 +158,12 @@ class Bwt extends utils.Adapter {
             }),
         })
             .then((res) => {
-                this.log.info(JSON.stringify(res.data));
+                this.log.debug(JSON.stringify(res.data));
                 return res.data.redirectUrl;
             })
             .catch((error) => {
                 this.log.error(error);
+                this.log.error("Please check username and password");
                 if (error.response) {
                     this.log.error(JSON.stringify(error.response.data));
                 }
@@ -147,24 +173,27 @@ class Bwt extends utils.Adapter {
         }
         const code = await this.requestClient({
             method: "get",
-            url: "https://account.bwt-group.com/connect/authorize/callback?response_type=code%20id_token&client_id=c0d4582ef6o9a4128dnmg94lz5h468cj&scope=openid%20offline_access%20bwt_digital_toolbox&nonce=asd&state=b64c76dee8ec45db87c2d093288bce73&redirect_uri=com.bwt.athomeapp%3A%2F%2Foauth2redirect",
+            url: "https://account.bwt-group.com" + redirectUrl,
             headers: {
-                Host: "account.bwt-group.com",
                 Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-
                 "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1.2 Mobile/15E148 Safari/604.1",
                 "Accept-Language": "de-de",
-                Referer:
-                    "https://account.bwt-group.com/?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fresponse_type%3Dcode%2520id_token%26client_id%3Dc0d4582ef6o9a4128dnmg94lz5h468cj%26scope%3Dopenid%2520offline_access%2520bwt_digital_toolbox%26nonce%3Dasd%26state%3Db64c76dee8ec45db87c2d093288bce73%26redirect_uri%3Dcom.bwt.athomeapp%253A%252F%252Foauth2redirect",
             },
             jar: this.cookieJar,
             withCredentials: true,
+            maxRedirects: 0,
         })
             .then((res) => {
-                this.log.info(JSON.stringify(res.data));
-                return qs.parse(res.request.path.split("?")[1]).code;
+                this.log.debug(JSON.stringify(res.data));
+                return;
             })
             .catch((error) => {
+                if (error.response) {
+                    if (error.response.status === 302) {
+                        return qs.parse(error.response.headers.location.split("#")[1]).code;
+                    }
+                }
+
                 this.log.error(error);
                 if (error.response) {
                     this.log.error(JSON.stringify(error.response.data));
@@ -192,7 +221,7 @@ class Bwt extends utils.Adapter {
             withCredentials: true,
         })
             .then((res) => {
-                this.log.info(JSON.stringify(res.data));
+                this.log.debug(JSON.stringify(res.data));
                 this.session = res.data;
                 this.setState("info.connection", true, true);
             })
@@ -292,7 +321,7 @@ class Bwt extends utils.Adapter {
                             },
                             native: {},
                         });
-                        this.json2iob.parse(vin + ".general", device);
+                        this.json2iob.parse(vin + ".general", device, { autoCast: true });
                     }
                 })
                 .catch((error) => {
@@ -308,26 +337,26 @@ class Bwt extends utils.Adapter {
         const startDateMonthFormatted = new Date(startTimestampMonth).toISOString().split("T")[0];
         const statusArray = [
             {
-                path: "telemetry",
+                path: ".telemetry",
                 url: "https://api.bwt-group.com/api/perla/i$d/telemetry",
             },
             {
-                path: "notifications",
+                path: ".notifications",
                 url: "https://api.bwt-group.com/api/device/$id/notifications?orderAsc=true",
                 forceIndex: true,
             },
             {
-                path: "limeFiltered",
+                path: ".limeFiltered",
                 url: "https://api.bwt-group.com/api/mobilebackend/$id/limeFiltered",
             },
             {
-                path: "waterconsumption",
+                path: ".waterconsumption",
                 url: "https://api.bwt-group.com/api/device/$id/waterconsumption/daily?since=" + startDateMonthFormatted + "&until=" + curDate,
                 preferedArrayName: "From",
             },
             {
-                path: "saltConsumption",
-                url: "https://api.bwt-group.com/api/device/$id/saltConsumption/daily?since=" + startDateMonthFormatted + "&aggregation=day&until=" + curDate,
+                path: ".saltConsumption",
+                url: "https://api.bwt-group.com/api/perla/$id/saltConsumption?from=" + startDateMonthFormatted + "&aggregation=day&to=" + curDate,
                 preferedArrayName: "From",
             },
         ];
