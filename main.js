@@ -75,6 +75,7 @@ class Bwt extends utils.Adapter {
                 return;
             }
             await this.getDeviceList();
+            this.log.info("Found " + this.deviceArray.length + " devices");
             await this.updateDevices();
             this.updateInterval = setInterval(async () => {
                 await this.updateDevices();
@@ -111,6 +112,7 @@ class Bwt extends utils.Adapter {
             });
     }
     async login() {
+        this.log.info("Login to App");
         const xsrf = await this.requestClient({
             method: "get",
             url: "https://account.bwt-group.com/?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fresponse_type%3Dcode%2520id_token%26client_id%3Dc0d4582ef6o9a4128dnmg94lz5h468cj%26scope%3Dopenid%2520offline_access%2520bwt_digital_toolbox%26nonce%3Dasd%26state%3Db64c76dee8ec45db87c2d093288bce73%26redirect_uri%3Dcom.bwt.athomeapp%253A%252F%252Foauth2redirect",
@@ -223,6 +225,8 @@ class Bwt extends utils.Adapter {
             .then((res) => {
                 this.log.debug(JSON.stringify(res.data));
                 this.session = res.data;
+
+                this.log.info("Login to App succesfull");
                 this.setState("info.connection", true, true);
             })
             .catch((error) => {
@@ -304,7 +308,9 @@ class Bwt extends utils.Adapter {
 
                     for (const device of res.data.Data) {
                         const vin = device.DeviceId;
-                        this.deviceArray.push(vin);
+                        if (this.deviceArray.indexOf(vin) === -1) {
+                            this.deviceArray.push(vin);
+                        }
                         const name = device.DisplayName;
 
                         await this.setObjectNotExistsAsync(vin, {
@@ -338,7 +344,7 @@ class Bwt extends utils.Adapter {
         const statusArray = [
             {
                 path: ".telemetry",
-                url: "https://api.bwt-group.com/api/perla/i$d/telemetry",
+                url: "https://api.bwt-group.com/api/perla/$id/telemetry",
             },
             {
                 path: ".notifications",
@@ -373,7 +379,7 @@ class Bwt extends utils.Adapter {
                     return;
                 }
                 const url = element.url.replace("$id", id);
-
+                this.log.debug(url);
                 await this.requestClient({
                     method: "get",
                     url: url,
@@ -406,6 +412,10 @@ class Bwt extends utils.Adapter {
                                     this.refreshToken();
                                 }, 1000 * 60);
 
+                                return;
+                            }
+                            if (error.response.status === 404) {
+                                error.response && this.log.debug(JSON.stringify(error.response.data));
                                 return;
                             }
                         }
