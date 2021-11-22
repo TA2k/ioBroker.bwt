@@ -415,6 +415,7 @@ class Bwt extends utils.Adapter {
                                 return;
                             }
                             if (error.response.status === 404) {
+                                this.log.warn(url);
                                 error.response && this.log.warn(JSON.stringify(error.response.data));
                                 return;
                             }
