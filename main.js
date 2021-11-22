@@ -54,14 +54,13 @@ class Bwt extends utils.Adapter {
         this.reLoginTimeout = null;
         this.refreshTokenTimeout = null;
         this.session = {};
-        this.subscribeStates("*");
+        //  this.subscribeStates("*");
         if (this.config.localIp) {
             if (!this.config.localPassword) {
                 this.log.warn("No local password set. Please set local password in the adapter settings");
                 return;
             }
             await this.localLogin();
-            this.log.info(JSON.stringify(this.cookieJar.toJSON()));
             await this.updateLocalDevices();
             this.updateInterval = setInterval(async () => {
                 await this.updateLocalDevices();
@@ -69,6 +68,20 @@ class Bwt extends utils.Adapter {
             this.refreshTokenInterval = setInterval(() => {
                 this.localLogin();
             }, 10 * 60 * 1000);
+        }
+        if (this.config.username && this.config.password) {
+            await this.login();
+            if (!this.session) {
+                return;
+            }
+            await this.getDeviceList();
+            await this.updateDevices();
+            this.updateInterval = setInterval(async () => {
+                await this.updateDevices();
+            }, this.config.interval * 60 * 1000);
+            this.refreshTokenInterval = setInterval(() => {
+                this.localLogin();
+            }, this.session.expires_in * 60 * 1000);
         }
     }
     async localLogin() {
@@ -97,7 +110,99 @@ class Bwt extends utils.Adapter {
                 }
             });
     }
+    async login() {
+        const redirectUrl = await this.requestClient({
+            method: "post",
+            url: "https://account.bwt-group.com/api/frontend/account/login",
+            headers: {
+                Pragma: "no-cache",
+                Accept: "application/json, text/plain, */*",
+                "X-XSRF-TOKEN": "CfDJ8OwC7zyDdjVApBfFiiwrjrBhFlNo4JzbVKWEY-AvHm4VKHOr_JUAUZgdlOu_AmHA9z2qkSkxo2fzJGqdiBjlIiMOjbbhWDpPclBUa4BbWPRYcZlJejaKm4EFiefa-A_I4hXrwQ_AYZAdEtZyX4wfuww",
+                "Accept-Language": "de-de",
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1.2 Mobile/15E148 Safari/604.1",
+            },
+            jar: this.cookieJar,
+            withCredentials: true,
+            data: JSON.stringify({
+                email: this.config.username,
+                password: this.config.password,
+                RememberLogin: true,
+                ReturnUrl:
+                    "/connect/authorize/callback?response_type=code%20id_token&client_id=c0d4582ef6o9a4128dnmg94lz5h468cj&scope=openid%20offline_access%20bwt_digital_toolbox&nonce=asd&state=b64c76dee8ec45db87c2d093288bce73&redirect_uri=com.bwt.athomeapp%3A%2F%2Foauth2redirect",
+            }),
+        })
+            .then((res) => {
+                this.log.info(JSON.stringify(res.data));
+                return res.data.redirectUrl;
+            })
+            .catch((error) => {
+                this.log.error(error);
+                if (error.response) {
+                    this.log.error(JSON.stringify(error.response.data));
+                }
+            });
+        if (!redirectUrl) {
+            return;
+        }
+        const code = await this.requestClient({
+            method: "get",
+            url: "https://account.bwt-group.com/connect/authorize/callback?response_type=code%20id_token&client_id=c0d4582ef6o9a4128dnmg94lz5h468cj&scope=openid%20offline_access%20bwt_digital_toolbox&nonce=asd&state=b64c76dee8ec45db87c2d093288bce73&redirect_uri=com.bwt.athomeapp%3A%2F%2Foauth2redirect",
+            headers: {
+                Host: "account.bwt-group.com",
+                Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1.2 Mobile/15E148 Safari/604.1",
+                "Accept-Language": "de-de",
+                Referer:
+                    "https://account.bwt-group.com/?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fresponse_type%3Dcode%2520id_token%26client_id%3Dc0d4582ef6o9a4128dnmg94lz5h468cj%26scope%3Dopenid%2520offline_access%2520bwt_digital_toolbox%26nonce%3Dasd%26state%3Db64c76dee8ec45db87c2d093288bce73%26redirect_uri%3Dcom.bwt.athomeapp%253A%252F%252Foauth2redirect",
+            },
+            jar: this.cookieJar,
+            withCredentials: true,
+        })
+            .then((res) => {
+                this.log.info(JSON.stringify(res.data));
+                return qs.parse(res.request.path.split("?")[1]).code;
+            })
+            .catch((error) => {
+                this.log.error(error);
+                if (error.response) {
+                    this.log.error(JSON.stringify(error.response.data));
+                }
+            });
+        await this.requestClient({
+            method: "post",
+            url: "https://account.bwt-group.com/auth/v2/connect/token/",
+            headers: {
+                Host: "account.bwt-group.com",
+                Origin: "file://",
+                Accept: "application/json, text/plain, */*",
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+                "Accept-Language": "de-de",
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            data: qs.stringify({
+                grant_type: "authorization_code",
+                client_id: "c0d4582ef6o9a4128dnmg94lz5h468cj",
+                client_secret: "ow2t75HoVSf6oM6Qkzxr7OW0n2YVcWsd",
+                redirect_uri: "com.bwt.athomeapp://oauth2redirect",
+                code: code,
+            }),
+            jar: this.cookieJar,
+            withCredentials: true,
+        })
+            .then((res) => {
+                this.log.info(JSON.stringify(res.data));
+                this.session = res.data;
+                this.setState("info.connection", true, true);
+            })
+            .catch((error) => {
+                this.log.error(error);
+                if (error.response) {
+                    this.log.error(JSON.stringify(error.response.data));
+                }
+            });
+    }
     async updateLocalDevices() {
         const statusArray = [
             {
@@ -152,7 +257,136 @@ class Bwt extends utils.Adapter {
                 });
         });
     }
+    async getDeviceList() {
+        const deviceListUrl = ["https://api.bwt-group.com/api/device", "https://api.bwt-group.com/api/product/customer", "https://api.bwt-group.com/api/pools/owned"];
+        for (const url of deviceListUrl) {
+            await this.requestClient({
+                method: "get",
+                url: url,
+                headers: {
+                    Accept: "application/json, text/plain, */*",
+                    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+                    Authorization: "Bearer " + this.session.access_token,
+                    "Accept-Language": "de-de",
+                },
+            })
+                .then(async (res) => {
+                    this.log.debug(JSON.stringify(res.data));
 
+                    for (const device of res.data.Data) {
+                        const vin = device.DeviceId;
+                        this.deviceArray.push(vin);
+                        const name = device.DisplayName;
+
+                        await this.setObjectNotExistsAsync(vin, {
+                            type: "device",
+                            common: {
+                                name: name,
+                            },
+                            native: {},
+                        });
+                        await this.setObjectNotExistsAsync(vin + ".general", {
+                            type: "channel",
+                            common: {
+                                name: "General Information",
+                            },
+                            native: {},
+                        });
+                        this.json2iob.parse(vin + ".general", device);
+                    }
+                })
+                .catch((error) => {
+                    this.log.error(error);
+                    error.response && this.log.error(JSON.stringify(error.response.data));
+                });
+        }
+    }
+
+    async updateDevices() {
+        const curDate = new Date().toISOString().split("T")[0];
+        const startTimestampMonth = new Date().setDate(new Date().getDate() - 364);
+        const startDateMonthFormatted = new Date(startTimestampMonth).toISOString().split("T")[0];
+        const statusArray = [
+            {
+                path: "telemetry",
+                url: "https://api.bwt-group.com/api/perla/i$d/telemetry",
+            },
+            {
+                path: "notifications",
+                url: "https://api.bwt-group.com/api/device/$id/notifications?orderAsc=true",
+                forceIndex: true,
+            },
+            {
+                path: "limeFiltered",
+                url: "https://api.bwt-group.com/api/mobilebackend/$id/limeFiltered",
+            },
+            {
+                path: "waterconsumption",
+                url: "https://api.bwt-group.com/api/device/$id/waterconsumption/daily?since=" + startDateMonthFormatted + "&until=" + curDate,
+                preferedArrayName: "From",
+            },
+            {
+                path: "saltConsumption",
+                url: "https://api.bwt-group.com/api/device/$id/saltConsumption/daily?since=" + startDateMonthFormatted + "&aggregation=day&until=" + curDate,
+                preferedArrayName: "From",
+            },
+        ];
+
+        const headers = {
+            Accept: "application/json, text/plain, */*",
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+            Authorization: "Bearer " + this.session.access_token,
+            "Accept-Language": "de-de",
+        };
+        this.deviceArray.forEach(async (id) => {
+            statusArray.forEach(async (element) => {
+                if (this.ignoreState.includes(element.path)) {
+                    return;
+                }
+                const url = element.url.replace("$id", id);
+
+                await this.requestClient({
+                    method: "get",
+                    url: url,
+                    headers: headers,
+                })
+                    .then((res) => {
+                        this.log.debug(JSON.stringify(res.data));
+                        if (!res.data) {
+                            return;
+                        }
+                        const data = res.data.Data;
+
+                        let forceIndex = null;
+                        if (element.forceIndex) {
+                            forceIndex = true;
+                        }
+                        let preferedArrayName = null;
+                        if (element.preferedArrayName) {
+                            preferedArrayName = element.preferedArrayName;
+                        }
+                        this.json2iob.parse(id + element.path, data, { forceIndex: forceIndex, preferedArrayName: preferedArrayName });
+                    })
+                    .catch((error) => {
+                        if (error.response) {
+                            if (error.response.status === 401) {
+                                error.response && this.log.debug(JSON.stringify(error.response.data));
+                                this.log.info(element.path + " receive 401 error. Refresh Token in 60 seconds");
+                                this.refreshTokenTimeout && clearTimeout(this.refreshTokenTimeout);
+                                this.refreshTokenTimeout = setTimeout(() => {
+                                    this.refreshToken();
+                                }, 1000 * 60);
+
+                                return;
+                            }
+                        }
+                        this.log.error(url);
+                        this.log.error(error);
+                        error.response && this.log.error(JSON.stringify(error.response.data));
+                    });
+            });
+        });
+    }
     sleep(ms) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
@@ -174,7 +408,35 @@ class Bwt extends utils.Adapter {
             callback();
         }
     }
-
+    async refreshToken() {
+        await this.requestClient({
+            method: "post",
+            url: "https://account.bwt-group.com/auth/v2/connect/token/",
+            headers: {
+                Accept: "*/*",
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 12_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+                "Accept-Language": "de-de",
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            data:
+                "grant_type=refresh_token&client_id=c0d4582ef6o9a4128dnmg94lz5h468cj&client_secret=ow2t75HoVSf6oM6Qkzxr7OW0n2YVcWsd&redirect_uri=com.bwt.athomeapp%3A%2F%2Foauth2redirect&refresh_token=" +
+                this.session.refresh_token,
+        })
+            .then((res) => {
+                this.log.debug(JSON.stringify(res.data));
+                this.session = res.data;
+                this.setState("info.connection", true, true);
+            })
+            .catch((error) => {
+                this.log.error("refresh token failed");
+                this.log.error(error);
+                error.response && this.log.error(JSON.stringify(error.response.data));
+                this.log.error("Start relogin in 1min");
+                this.reLoginTimeout = setTimeout(() => {
+                    this.login();
+                }, 1000 * 60 * 1);
+            });
+    }
     /**
      * Is called if a subscribed state changes
      * @param {string} id
