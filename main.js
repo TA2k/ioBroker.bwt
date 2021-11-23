@@ -343,7 +343,7 @@ class Bwt extends utils.Adapter {
 
     async updateDevices() {
         const curDate = new Date().toISOString().split("T")[0];
-        const startTimestampMonth = new Date().setDate(new Date().getDate() - 364);
+        const startTimestampMonth = new Date().setDate(new Date().getDate() - 100);
         const startDateMonthFormatted = new Date(startTimestampMonth).toISOString().split("T")[0];
         const statusArray = [
             {
@@ -363,11 +363,13 @@ class Bwt extends utils.Adapter {
                 path: ".waterconsumption",
                 url: "https://api.bwt-group.com/api/device/$id/waterconsumption/daily?since=" + startDateMonthFormatted + "&until=" + curDate,
                 preferedArrayName: "From",
+                forceIndex: true,
             },
             {
                 path: ".saltConsumption",
                 url: "https://api.bwt-group.com/api/perla/$id/saltConsumption?from=" + startDateMonthFormatted + "&aggregation=day&to=" + curDate,
                 preferedArrayName: "From",
+                forceIndex: true,
             },
         ];
 
