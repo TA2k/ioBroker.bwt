@@ -308,6 +308,10 @@ class Bwt extends utils.Adapter {
 
                     for (const device of res.data.Data) {
                         const vin = device.DeviceId;
+                        if (!vin) {
+                            this.log.info("Device without id " + device.ProductCode);
+                            continue;
+                        }
                         if (this.deviceArray.indexOf(vin) === -1) {
                             this.deviceArray.push(vin);
                         }
