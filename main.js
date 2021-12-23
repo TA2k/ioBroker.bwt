@@ -100,7 +100,7 @@ class Bwt extends utils.Adapter {
             data: "_method=POST&STLoginPWField=" + this.config.localPassword + "&function=save",
         })
             .then((res) => {
-                this.log.info(JSON.stringify(res.data));
+                this.log.debug(JSON.stringify(res.data));
 
                 this.setState("info.connection", true, true);
             })
