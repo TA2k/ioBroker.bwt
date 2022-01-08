@@ -432,6 +432,8 @@ class Bwt extends utils.Adapter {
                     });
             });
         });
+
+        this.getDeviceList();
     }
     sleep(ms) {
         return new Promise((resolve) => setTimeout(resolve, ms));
