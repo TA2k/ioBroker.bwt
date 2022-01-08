@@ -309,7 +309,11 @@ class Bwt extends utils.Adapter {
             })
                 .then(async (res) => {
                     this.log.debug(JSON.stringify(res.data));
-
+                    if (!res.data.Data) {
+                        this.log.error("No Data in response");
+                        this.log.info(JSON.stringify(res.data));
+                        return;
+                    }
                     for (const device of res.data.Data) {
                         const vin = device.DeviceId;
                         if (!vin) {
