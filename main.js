@@ -265,6 +265,10 @@ class Bwt extends utils.Adapter {
                     this.log.debug(JSON.stringify(res.data));
 
                     const data = res.data;
+                    if (res.data.indexOf("users/login") !== -1) {
+                        this.localLogin();
+                        return;
+                    }
 
                     const forceIndex = null;
                     const preferedArrayName = null;
