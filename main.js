@@ -82,7 +82,7 @@ class Bwt extends utils.Adapter {
             }, this.config.interval * 60 * 1000);
             this.refreshTokenInterval = setInterval(() => {
                 this.refreshToken();
-            }, this.session.expires_in * 60 * 1000);
+            }, this.session.expires_in * 1000);
         }
     }
     async localLogin() {
