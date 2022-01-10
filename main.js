@@ -60,6 +60,8 @@ class Bwt extends utils.Adapter {
                 this.log.warn("No local password set. Please set local password in the adapter settings");
                 return;
             }
+
+            this.log.info("local login https://" + this.config.localIp + "/users/login");
             await this.localLogin();
             await this.updateLocalDevices();
             this.updateInterval = setInterval(async () => {
@@ -82,11 +84,10 @@ class Bwt extends utils.Adapter {
             }, this.config.interval * 60 * 1000);
             this.refreshTokenInterval = setInterval(() => {
                 this.refreshToken();
-            }, this.session.expires_in * 1000);
+            }, (this.session.expires_in - 100) * 1000);
         }
     }
     async localLogin() {
-        this.log.info("local login https://" + this.config.localIp + "/users/login");
         await this.requestClient({
             method: "post",
             url: "https://" + this.config.localIp + "/users/login",
@@ -311,7 +312,7 @@ class Bwt extends utils.Adapter {
                     this.log.debug(JSON.stringify(res.data));
                     if (!res.data.Data) {
                         this.log.error("No Data in response");
-                        this.log.info(JSON.stringify(res.data));
+                        this.log.error(JSON.stringify(res.data));
                         return;
                     }
                     for (const device of res.data.Data) {
