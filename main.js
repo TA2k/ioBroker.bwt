@@ -23,7 +23,6 @@ class Bwt extends utils.Adapter {
             name: "bwt",
         });
         this.on("ready", this.onReady.bind(this));
-        this.on("stateChange", this.onStateChange.bind(this));
         this.on("unload", this.onUnload.bind(this));
         this.deviceArray = [];
         this.json2iob = new Json2iob(this);
@@ -495,17 +494,7 @@ class Bwt extends utils.Adapter {
                 }, 1000 * 60 * 1);
             });
     }
-    /**
-     * Is called if a subscribed state changes
-     * @param {string} id
-     * @param {ioBroker.State | null | undefined} state
-     */
-    async onStateChange(id, state) {
-        if (state) {
-            if (!state.ack) {
-            }
-        }
-    }
+
 }
 
 if (require.main !== module) {
