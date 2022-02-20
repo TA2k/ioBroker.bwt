@@ -269,7 +269,10 @@ class Bwt extends utils.Adapter {
                         this.localLogin();
                         return;
                     }
-
+                    if (res.data.indexOf && res.data.indexOf("DOCTYPE") !== -1) {
+                        this.log.warn("Cannot receive local data " + element.path + " via: " + url);
+                        return;
+                    }
                     const forceIndex = null;
                     const preferedArrayName = null;
 
@@ -494,7 +497,6 @@ class Bwt extends utils.Adapter {
                 }, 1000 * 60 * 1);
             });
     }
-
 }
 
 if (require.main !== module) {
