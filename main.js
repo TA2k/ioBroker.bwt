@@ -246,6 +246,10 @@ class Bwt extends utils.Adapter {
                 path: "wasserverbrauch",
                 url: "https://" + this.config.localIp + "/chart/update",
             },
+            {
+                path: "updateDetails2",
+                url: "https://" + this.config.localIp + "/info/updateDetails2",
+            },
         ];
 
         const headers = {
