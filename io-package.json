@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "bwt",
-    "version": "0.0.5",
+    "version": "0.1.0",
     "news": {
+      "0.1.0": {
+        "en": "add local api connection",
+        "de": "Lokale API Verbindung hinzugefügt"
+      },
       "0.0.5": {
         "en": "hide no device message",
         "de": "Kein Gerät Meldung wird nicht mehr angezeigt"
