@@ -62,9 +62,9 @@ systemDictionary = {
     pl: 'Lokalny adres IP',
     'zh-cn': '本地IP',
   },
-  'Local Password': {
-    en: 'Local Password',
-    de: 'Lokales Passwort',
+  'Local Password (Login-Code)': {
+    en: 'Local Password (Login-Code)',
+    de: 'Lokales Password (Login-Code)',
     ru: 'Локальный пароль',
     pt: 'Senha local',
     nl: 'Lokaal wachtwoord',
