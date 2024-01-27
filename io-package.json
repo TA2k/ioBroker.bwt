@@ -87,6 +87,7 @@
     "username": "",
     "password": "",
     "localPassword": "",
+    "localUser": "",
     "localIp": "",
     "localInterval": 60,
     "interval": 10
