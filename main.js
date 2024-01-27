@@ -59,6 +59,8 @@ class Bwt extends utils.Adapter {
         this.log.warn('No local login code set. Please set local login code in the adapter settings');
         return;
       }
+      this.log.info('Start fetching local API data from ' + this.config.localIp);
+      this.log.info("You can find the Data in the Object 'local'");
       await this.extendObjectAsync('local', {
         type: 'device',
         common: {
