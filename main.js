@@ -252,7 +252,7 @@ class Bwt extends utils.Adapter {
 
       await this.requestClient({
         method: 'get',
-        url: this.config.localIp + ':8080' + url,
+        url: 'http://' + this.config.localIp + ':8080' + url,
         headers: headers,
       })
         .then((res) => {
