@@ -256,11 +256,13 @@ class Bwt extends utils.Adapter {
         headers: headers,
       })
         .then((res) => {
+          this.setState('info.connection', true, true);
           this.log.debug(JSON.stringify(res.data));
           const data = res.data;
           this.json2iob.parse('local.' + element.path, data, { forceIndex: true });
         })
         .catch((error) => {
+          this.setState('info.connection', false, true);
           this.log.error(url);
           this.log.error(error);
           error.response && this.log.error(JSON.stringify(error.response.data));
