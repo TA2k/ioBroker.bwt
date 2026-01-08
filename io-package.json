@@ -64,6 +64,7 @@
     "extIcon": "https://raw.githubusercontent.com/TA2k/ioBroker.bwt/master/admin/bwt.png",
     "readme": "https://github.com/TA2k/ioBroker.bwt/blob/master/README.md",
     "loglevel": "info",
+    "tier": 2,
     "mode": "daemon",
     "type": "household",
     "compact": true,
