@@ -56,7 +56,6 @@
     "keywords": ["BWT", "perla"],
     "license": "MIT",
     "platform": "Javascript/Node.js",
-    "main": "main.js",
     "icon": "bwt.png",
     "enabled": true,
     "extIcon": "https://raw.githubusercontent.com/TA2k/ioBroker.bwt/master/admin/bwt.png",
