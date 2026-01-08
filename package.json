@@ -24,11 +24,11 @@
   "dependencies": {
     "@iobroker/adapter-core": "^3.3.2",
     "axios": "^1.13.2",
-    "http-cookie-agent": "^6.0.8",
+    "http-cookie-agent": "^7.0.3",
     "json-bigint": "^1.0.0",
     "json2iob": "^2.6.21",
     "qs": "^6.14.1",
-    "tough-cookie": "^5.1.2"
+    "tough-cookie": "^6.0.0"
   },
   "devDependencies": {
     "@iobroker/testing": "^5.2.2",
