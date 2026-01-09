@@ -97,7 +97,7 @@ class Bwt extends utils.Adapter {
     this.log.info('Login to App');
     const xsrf = await this.requestClient({
       method: 'get',
-      url: 'https://account.bwt-group.com/?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fresponse_type%3Dcode%2520id_token%26client_id%3Ddc194f87e3943468b0e48aaee20dd8e6%26scope%3Dopenid%2520offline_access%2520email%2520profile%2520aidu-api%2520bwt_digital_toolbox%26nonce%3Dasd%26state%3Db64c76dee8ec45db87c2d093288bce73%26redirect_uri%3Dcom.bwt.athomeapp%253A%252F%252Foauth2redirect',
+      url: 'https://account.bwt-group.com/?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fresponse_type%3Dcode%2520id_token%26client_id%3Dc0d4582ef6o9a4128dnmg94lz5h468cj%26scope%3Dopenid%2520offline_access%2520email%2520profile%2520aidu-api%2520bwt_digital_toolbox%26nonce%3Dasd%26state%3Db64c76dee8ec45db87c2d093288bce73%26redirect_uri%3Dcom.bwt.athomeapp%253A%252F%252Foauth2redirect',
       headers: {
         Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'User-Agent':
@@ -140,7 +140,7 @@ class Bwt extends utils.Adapter {
         password: this.config.password,
         RememberLogin: true,
         ReturnUrl:
-          '/connect/authorize/callback?response_type=code%20id_token&client_id=dc194f87e3943468b0e48aaee20dd8e6&scope=openid%20offline_access%20email%20profile%20aidu-api%20bwt_digital_toolbox&nonce=asd&state=b64c76dee8ec45db87c2d093288bce73&redirect_uri=com.bwt.athomeapp%3A%2F%2Foauth2redirect',
+          '/connect/authorize/callback?response_type=code%20id_token&client_id=c0d4582ef6o9a4128dnmg94lz5h468cj&scope=openid%20offline_access%20email%20profile%20aidu-api%20bwt_digital_toolbox&nonce=asd&state=b64c76dee8ec45db87c2d093288bce73&redirect_uri=com.bwt.athomeapp%3A%2F%2Foauth2redirect',
       }),
     })
       .then((res) => {
@@ -199,8 +199,8 @@ class Bwt extends utils.Adapter {
       },
       data: qs.stringify({
         grant_type: 'authorization_code',
-        client_id: 'dc194f87e3943468b0e48aaee20dd8e6',
-        client_secret: 'RqEyAjmWSh7V8C1QowXNiNDrQiQDRww0',
+        client_id: 'c0d4582ef6o9a4128dnmg94lz5h468cj',
+        client_secret: 'ow2t75HoVSf6oM6Qkzxr7OW0n2YVcWsd',
         redirect_uri: 'com.bwt.athomeapp://oauth2redirect',
         code: code,
       }),
@@ -455,7 +455,7 @@ class Bwt extends utils.Adapter {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       data:
-        'grant_type=refresh_token&client_id=dc194f87e3943468b0e48aaee20dd8e6&client_secret=RqEyAjmWSh7V8C1QowXNiNDrQiQDRww0&redirect_uri=com.bwt.athomeapp%3A%2F%2Foauth2redirect&refresh_token=' +
+        'grant_type=refresh_token&client_id=c0d4582ef6o9a4128dnmg94lz5h468cj&client_secret=ow2t75HoVSf6oM6Qkzxr7OW0n2YVcWsd&redirect_uri=com.bwt.athomeapp%3A%2F%2Foauth2redirect&refresh_token=' +
         this.session.refresh_token,
     })
       .then((res) => {
