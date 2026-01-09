@@ -94,10 +94,10 @@ class Bwt extends utils.Adapter {
   }
 
   async login() {
-    this.log.info('Login to App');
+    this.log.info('Login to App - Step 1: Getting XSRF token');
     const xsrf = await this.requestClient({
       method: 'get',
-      url: 'https://account.bwt-group.com/?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fresponse_type%3Dcode%2520id_token%26client_id%3Dc0d4582ef6o9a4128dnmg94lz5h468cj%26scope%3Dopenid%2520offline_access%2520email%2520profile%2520aidu-api%2520bwt_digital_toolbox%26nonce%3Dasd%26state%3Db64c76dee8ec45db87c2d093288bce73%26redirect_uri%3Dcom.bwt.athomeapp%253A%252F%252Foauth2redirect',
+      url: 'https://account.bwt-group.com/?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fresponse_type%3Dcode%26client_id%3Dc0d4582ef6o9a4128dnmg94lz5h468cj%26scope%3Dopenid%2520offline_access%2520email%2520profile%2520aidu-api%2520bwt_digital_toolbox%26nonce%3Dasd%26state%3Db64c76dee8ec45db87c2d093288bce73%26redirect_uri%3Dcom.bwt.athomeapp%253A%252F%252Foauth2redirect',
       headers: {
         Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'User-Agent':
@@ -108,19 +108,33 @@ class Bwt extends utils.Adapter {
       withCredentials: true,
     })
       .then((res) => {
-        this.log.debug(JSON.stringify(res.data));
+        this.log.debug('Step 1 response status: ' + res.status);
+        if (!res.headers['set-cookie']) {
+          this.log.error('Step 1: No cookies received from server');
+          return null;
+        }
         for (const cookie of res.headers['set-cookie']) {
           if (cookie.split('=')[0] === 'XSRF-TOKEN') {
-            return cookie.split('=')[1].split(';')[0];
+            const token = cookie.split('=')[1].split(';')[0];
+            this.log.debug('Step 1: XSRF token received: ' + token.substring(0, 10) + '...');
+            return token;
           }
         }
+        this.log.error('Step 1: No XSRF-TOKEN found in cookies');
+        return null;
       })
       .catch((error) => {
-        this.log.error(error);
+        this.log.error('Step 1 failed: ' + error.message);
         if (error.response) {
-          this.log.error(JSON.stringify(error.response.data));
+          this.log.error('Step 1 response status: ' + error.response.status);
+          this.log.error('Step 1 response data: ' + JSON.stringify(error.response.data));
         }
       });
+    if (!xsrf) {
+      this.log.error('Login aborted: No XSRF token received');
+      return;
+    }
+    this.log.info('Login to App - Step 2: Sending credentials');
     const redirectUrl = await this.requestClient({
       method: 'post',
       url: 'https://account.bwt-group.com/api/frontend/account/login',
@@ -140,23 +154,34 @@ class Bwt extends utils.Adapter {
         password: this.config.password,
         RememberLogin: true,
         ReturnUrl:
-          '/connect/authorize/callback?response_type=code%20id_token&client_id=c0d4582ef6o9a4128dnmg94lz5h468cj&scope=openid%20offline_access%20email%20profile%20aidu-api%20bwt_digital_toolbox&nonce=asd&state=b64c76dee8ec45db87c2d093288bce73&redirect_uri=com.bwt.athomeapp%3A%2F%2Foauth2redirect',
+          '/connect/authorize/callback?response_type=code&client_id=c0d4582ef6o9a4128dnmg94lz5h468cj&scope=openid%20offline_access%20email%20profile%20aidu-api%20bwt_digital_toolbox&nonce=asd&state=b64c76dee8ec45db87c2d093288bce73&redirect_uri=com.bwt.athomeapp%3A%2F%2Foauth2redirect',
       }),
     })
       .then((res) => {
-        this.log.debug(JSON.stringify(res.data));
-        return res.data.redirectUrl;
+        this.log.debug('Step 2 response status: ' + res.status);
+        if (res.data.redirectUrl) {
+          this.log.debug('Step 2: Redirect URL received');
+          return res.data.redirectUrl;
+        } else {
+          this.log.error('Step 2: No redirectUrl in response');
+          this.log.error('Step 2 response: ' + JSON.stringify(res.data));
+          return null;
+        }
       })
       .catch((error) => {
-        this.log.error(error);
+        this.log.error('Step 2 failed: ' + error.message);
         this.log.error('Please check username and password');
         if (error.response) {
-          this.log.error(JSON.stringify(error.response.data));
+          this.log.error('Step 2 response status: ' + error.response.status);
+          this.log.error('Step 2 response data: ' + JSON.stringify(error.response.data));
         }
       });
     if (!redirectUrl) {
+      this.log.error('Login aborted: No redirect URL received after login');
       return;
     }
+    this.log.info('Login to App - Step 3: Getting authorization code');
+    this.log.debug('Step 3: Redirect URL: ' + redirectUrl);
     const code = await this.requestClient({
       method: 'get',
       url: 'https://account.bwt-group.com' + redirectUrl,
@@ -171,21 +196,43 @@ class Bwt extends utils.Adapter {
       maxRedirects: 0,
     })
       .then((res) => {
-        this.log.debug(JSON.stringify(res.data));
-        return;
+        this.log.debug('Step 3 unexpected success response: ' + res.status);
+        return null;
       })
       .catch((error) => {
         if (error.response) {
           if (error.response.status === 302) {
-            return qs.parse(error.response.headers.location.split('#')[1]).code;
+            const location = error.response.headers.location;
+            this.log.debug('Step 3: Redirect location: ' + location);
+            // Try query parameter first (response_type=code), then hash fragment (response_type=code id_token)
+            let extractedCode = null;
+            if (location.includes('?')) {
+              extractedCode = qs.parse(location.split('?')[1]).code;
+            } else if (location.includes('#')) {
+              extractedCode = qs.parse(location.split('#')[1]).code;
+            }
+            if (extractedCode) {
+              this.log.debug('Step 3: Authorization code received: ' + extractedCode.substring(0, 10) + '...');
+              return extractedCode;
+            } else {
+              this.log.error('Step 3: No code found in redirect location');
+              this.log.error('Step 3: Location header: ' + location);
+              return null;
+            }
+          } else {
+            this.log.error('Step 3 failed with status: ' + error.response.status);
+            this.log.error('Step 3 response data: ' + JSON.stringify(error.response.data));
           }
+        } else {
+          this.log.error('Step 3 failed: ' + error.message);
         }
-
-        this.log.error(error);
-        if (error.response) {
-          this.log.error(JSON.stringify(error.response.data));
-        }
+        return null;
       });
+    if (!code) {
+      this.log.error('Login aborted: No authorization code received');
+      return;
+    }
+    this.log.info('Login to App - Step 4: Exchanging code for tokens');
     await this.requestClient({
       method: 'post',
       url: 'https://account.bwt-group.com/auth/v2/connect/token/',
@@ -208,16 +255,30 @@ class Bwt extends utils.Adapter {
       withCredentials: true,
     })
       .then((res) => {
-        this.log.debug(JSON.stringify(res.data));
+        this.log.debug('Step 4 response status: ' + res.status);
         this.session = res.data;
-
-        this.log.info('Login to App succesfull');
-        this.setState('info.connection', true, true);
+        if (this.session.access_token) {
+          this.log.info('Login to App successful - Token received');
+          this.log.debug('Step 4: Token type: ' + this.session.token_type);
+          this.log.debug('Step 4: Expires in: ' + this.session.expires_in + ' seconds');
+          this.log.debug('Step 4: Scope: ' + this.session.scope);
+          this.setState('info.connection', true, true);
+        } else {
+          this.log.error('Step 4: No access_token in response');
+          this.log.error('Step 4 response: ' + JSON.stringify(res.data));
+        }
       })
       .catch((error) => {
-        this.log.error(error);
+        this.log.error('Step 4 failed: ' + error.message);
         if (error.response) {
-          this.log.error(JSON.stringify(error.response.data));
+          this.log.error('Step 4 response status: ' + error.response.status);
+          this.log.error('Step 4 response data: ' + JSON.stringify(error.response.data));
+          if (error.response.data && error.response.data.error) {
+            this.log.error('Step 4 OAuth error: ' + error.response.data.error);
+            if (error.response.data.error_description) {
+              this.log.error('Step 4 OAuth error description: ' + error.response.data.error_description);
+            }
+          }
         }
       });
   }
@@ -270,12 +331,14 @@ class Bwt extends utils.Adapter {
     });
   }
   async getDeviceList() {
+    this.log.info('Fetching device list from API');
     const deviceListUrl = [
       'https://api.bwt-group.com/api/device',
       'https://api.bwt-group.com/api/product/customer',
       'https://api.bwt-group.com/api/pools/owned',
     ];
     for (const url of deviceListUrl) {
+      this.log.debug('API Request: GET ' + url);
       await this.requestClient({
         method: 'get',
         url: url,
@@ -287,12 +350,13 @@ class Bwt extends utils.Adapter {
         },
       })
         .then(async (res) => {
-          this.log.debug(JSON.stringify(res.data));
+          this.log.debug('API Response status: ' + res.status + ' for ' + url);
           if (!res.data.Data) {
-            this.log.error('No Data in response');
-            this.log.error(JSON.stringify(res.data));
+            this.log.error('API Error: No Data field in response for ' + url);
+            this.log.error('API Response Meta: ' + JSON.stringify(res.data.Meta || res.data));
             return;
           }
+          this.log.debug('API Response: ' + res.data.Data.length + ' items received from ' + url);
           for (const device of res.data.Data) {
             const vin = device.DeviceId;
             if (!vin) {
@@ -322,8 +386,15 @@ class Bwt extends utils.Adapter {
           }
         })
         .catch((error) => {
-          this.log.error(error);
-          error.response && this.log.error(JSON.stringify(error.response.data));
+          this.log.error('API Request failed for ' + url + ': ' + error.message);
+          if (error.response) {
+            this.log.error('API Response status: ' + error.response.status);
+            this.log.error('API Response data: ' + JSON.stringify(error.response.data));
+            if (error.response.status === 401) {
+              this.log.error('API Authentication failed - Token may be invalid or expired');
+              this.log.error('Token preview: ' + (this.session.access_token ? this.session.access_token.substring(0, 20) + '...' : 'NO TOKEN'));
+            }
+          }
         });
     }
   }
