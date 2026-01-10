@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "bwt",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "news": {
+      "0.1.2": {
+        "en": "fix cloud login",
+        "de": "Cloud Login gefixt"
+      },
       "0.1.1": {
         "en": "add local api connection",
         "de": "Lokale API Verbindung hinzugefügt"
