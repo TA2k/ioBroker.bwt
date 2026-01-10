@@ -97,7 +97,7 @@ class Bwt extends utils.Adapter {
     this.log.info('Login to App - Step 1: Getting XSRF token');
     const xsrf = await this.requestClient({
       method: 'get',
-      url: 'https://account.bwt-group.com/?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fresponse_type%3Dcode%26client_id%3Dc0d4582ef6o9a4128dnmg94lz5h468cj%26scope%3Dopenid%2520offline_access%2520email%2520profile%2520aidu-api%2520bwt_digital_toolbox%26nonce%3Dasd%26state%3Db64c76dee8ec45db87c2d093288bce73%26redirect_uri%3Dcom.bwt.athomeapp%253A%252F%252Foauth2redirect',
+      url: 'https://account.bwt-group.com/?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fresponse_type%3Dcode%2520id_token%26client_id%3Dc0d4582ef6o9a4128dnmg94lz5h468cj%26scope%3Dopenid%2520offline_access%2520email%2520profile%2520aidu-api%2520bwt_digital_toolbox%26nonce%3Dasd%26state%3Db64c76dee8ec45db87c2d093288bce73%26redirect_uri%3Dcom.bwt.athomeapp%253A%252F%252Foauth2redirect',
       headers: {
         Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'User-Agent':
@@ -154,7 +154,7 @@ class Bwt extends utils.Adapter {
         password: this.config.password,
         RememberLogin: true,
         ReturnUrl:
-          '/connect/authorize/callback?response_type=code&client_id=c0d4582ef6o9a4128dnmg94lz5h468cj&scope=openid%20offline_access%20email%20profile%20aidu-api%20bwt_digital_toolbox&nonce=asd&state=b64c76dee8ec45db87c2d093288bce73&redirect_uri=com.bwt.athomeapp%3A%2F%2Foauth2redirect',
+          '/connect/authorize/callback?response_type=code%20id_token&client_id=c0d4582ef6o9a4128dnmg94lz5h468cj&scope=openid%20offline_access%20email%20profile%20aidu-api%20bwt_digital_toolbox&nonce=asd&state=b64c76dee8ec45db87c2d093288bce73&redirect_uri=com.bwt.athomeapp%3A%2F%2Foauth2redirect',
       }),
     })
       .then((res) => {
