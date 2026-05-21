@@ -56,8 +56,13 @@
       "pl": "Adapter do urządzeń bwt",
       "zh-cn": "bwt 设备的适配器"
     },
-    "authors": ["TA2k <tombox2020@gmail.com>"],
-    "keywords": ["BWT", "perla"],
+    "authors": [
+      "TA2k <tombox2020@gmail.com>"
+    ],
+    "keywords": [
+      "BWT",
+      "perla"
+    ],
     "licenseInformation": {
       "type": "free",
       "license": "MIT"
@@ -82,7 +87,7 @@
     },
     "dependencies": [
       {
-        "js-controller": ">=3.0.0"
+        "js-controller": ">=6.0.11"
       }
     ],
     "globalDependencies": [
@@ -91,8 +96,14 @@
       }
     ]
   },
-  "encryptedNative": ["password", "localPassword"],
-  "protectedNative": ["password", "localPassword"],
+  "encryptedNative": [
+    "password",
+    "localPassword"
+  ],
+  "protectedNative": [
+    "password",
+    "localPassword"
+  ],
   "native": {
     "username": "",
     "password": "",
