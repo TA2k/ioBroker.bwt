@@ -34,6 +34,10 @@ BWT-Firmware >V2.02xx ( kann durch den BWT Support installiert werden auf Anfrag
 
 ## Changelog
 
+
+### **WORK IN PROGRESS**
+- (ioBroker-Bot) Adapter requires js-controller >= 6.0.11 now.
+
 ### 0.0.1
 
 - (TA2k) initial release
