@@ -56,8 +56,13 @@
       "pl": "Adapter do urządzeń bwt",
       "zh-cn": "bwt 设备的适配器"
     },
-    "authors": ["TA2k <tombox2020@gmail.com>"],
-    "keywords": ["BWT", "perla"],
+    "authors": [
+      "TA2k <tombox2020@gmail.com>"
+    ],
+    "keywords": [
+      "BWT",
+      "perla"
+    ],
     "licenseInformation": {
       "type": "free",
       "license": "MIT"
@@ -74,7 +79,6 @@
     "compact": true,
     "connectionType": "local",
     "dataSource": "poll",
-    "materialize": true,
     "plugins": {
       "sentry": {
         "dsn": "https://c9bd6c851b1246da95e6e982aa9b88f3@sentry.iobroker.net/152"
@@ -82,17 +86,26 @@
     },
     "dependencies": [
       {
-        "js-controller": ">=3.0.0"
+        "js-controller": ">=6.0.11"
       }
     ],
     "globalDependencies": [
       {
         "admin": ">=4.0.9"
       }
-    ]
+    ],
+    "adminUI": {
+      "config": "materialize"
+    }
   },
-  "encryptedNative": ["password", "localPassword"],
-  "protectedNative": ["password", "localPassword"],
+  "encryptedNative": [
+    "password",
+    "localPassword"
+  ],
+  "protectedNative": [
+    "password",
+    "localPassword"
+  ],
   "native": {
     "username": "",
     "password": "",
